@@ -1,0 +1,10 @@
+blockchains:
+  student-courses:
+    module: main
+compile:
+  rellVersion: 0.12.0
+database:
+  schema: schema_student_courses
+test:
+  modules:
+    - test

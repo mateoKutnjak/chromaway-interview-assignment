@@ -1,0 +1,152 @@
+@test module;
+
+import main.*;
+
+function test_add_course() {
+    rell.test.tx()
+        .op(create_course("Mathematics", 7))
+        .op(create_course("Physics", 6))
+        .run();
+
+    val all_courses = course @* { };
+
+    assert_equals(all_courses.size(), 2);
+
+    assert_equals(all_courses[0].name, "Mathematics");
+    assert_equals(all_courses[0].points, 7);
+
+    assert_equals(all_courses[1].name, "Physics");
+    assert_equals(all_courses[1].points, 6);
+}
+
+function test_add_student() {
+    rell.test.tx()
+        .op(create_student("GA42", "John", "Smith", 22))
+        .op(create_student("UX28", "Samantha", "Bosin", 19))
+        .op(create_student("AR87", "Benjamin", "Button", 72))
+        .run();
+
+    val all_students = student @* { };
+
+    assert_equals(all_students.size(), 3);
+
+    assert_equals(all_students[0].student_id, "GA42");
+    assert_equals(all_students[0].first_name, "John");
+    assert_equals(all_students[0].last_name, "Smith");
+    assert_equals(all_students[0].age, 22);
+
+    assert_equals(all_students[1].student_id, "UX28");
+    assert_equals(all_students[1].first_name, "Samantha");
+    assert_equals(all_students[1].last_name, "Bosin");
+    assert_equals(all_students[1].age, 19);
+
+    assert_equals(all_students[2].student_id, "AR87");
+    assert_equals(all_students[2].first_name, "Benjamin");
+    assert_equals(all_students[2].last_name, "Button");
+    assert_equals(all_students[2].age, 72);
+}
+
+function test_add_student_to_a_course() {
+    rell.test.tx()
+        .op(create_student("GA42", "John", "Smith", 22))
+        .op(create_student("UX28", "Samantha", "Bosin", 19))
+        .op(create_student("AR87", "Benjamin", "Button", 72))
+        .op(create_course("Mathematics", 7))
+        .op(create_course("Physics", 6))
+        .op(create_course("Programming", 6))
+        .op(create_course("Digital Logic", 6))
+        .op(create_course("Electronics", 6))
+        .op(create_course("Deep Learning", 6))
+        .op(create_enrollment("Mathematics", "GA42", true))
+        .op(create_enrollment("Physics", "GA42", true))
+        .op(create_enrollment("Programming", "GA42", true))
+        .op(create_enrollment("Digital Logic", "GA42", true))
+        .op(create_enrollment("Electronics", "GA42", true))
+        .op(create_enrollment("Deep Learning", "GA42", true))
+        .op(create_enrollment("Mathematics", "UX28", true))
+        .op(create_enrollment("Electronics", "UX28", true))
+        .op(create_enrollment("Deep Learning", "UX28", true))
+        .run();
+
+    val all_enrollments = get_all_enrollments();
+
+    assert_equals(all_enrollments.size(), 9);
+
+    assert_equals(all_enrollments[0].student.student_id, "GA42");
+    assert_equals(all_enrollments[0].student.first_name, "John");
+    assert_equals(all_enrollments[0].student.last_name, "Smith");
+    assert_equals(all_enrollments[0].student.age, 22);
+    assert_equals(all_enrollments[0].course.name, "Mathematics");
+    assert_equals(all_enrollments[0].course.points, 7);
+    assert_equals(all_enrollments[0].is_completed, true);
+
+    assert_equals(all_enrollments[8].student.student_id, "UX28");
+    assert_equals(all_enrollments[8].student.first_name, "Samantha");
+    assert_equals(all_enrollments[8].student.last_name, "Bosin");
+    assert_equals(all_enrollments[8].student.age, 19);
+    assert_equals(all_enrollments[8].course.name, "Deep Learning");
+    assert_equals(all_enrollments[8].course.points, 6);
+    assert_equals(all_enrollments[8].is_completed, true);
+}
+
+function test_count_students_by_course() {
+    rell.test.tx()
+        .op(create_student("GA42", "John", "Smith", 22))
+        .op(create_student("UX28", "Samantha", "Bosin", 19))
+        .op(create_student("AR87", "Benjamin", "Button", 72))
+        .op(create_course("Mathematics", 7))
+        .op(create_course("Physics", 6))
+        .op(create_enrollment("Mathematics", "GA42", true))
+        .op(create_enrollment("Mathematics", "UX28", true))
+        .op(create_enrollment("Mathematics", "AR87", false))
+        .op(create_enrollment("Physics", "AR87", true))
+        .run();
+
+    val enrollments_count_mathematics = count_students_by_course("Mathematics");
+    val enrollments_count_physics = count_students_by_course("Physics");
+
+    assert_equals(enrollments_count_mathematics[0], 3);
+    assert_equals(enrollments_count_physics[0], 1);
+}
+
+function test_get_all_courses_by_student() {
+    rell.test.tx()
+        .op(create_student("GA42", "John", "Smith", 22))
+        .op(create_student("UX28", "Samantha", "Bosin", 19))
+        .op(create_student("AR87", "Benjamin", "Button", 72))
+        .op(create_course("Mathematics", 7))
+        .op(create_course("Physics", 6))
+        .op(create_course("Programming", 6))
+        .op(create_course("Digital Logic", 6))
+        .op(create_course("Electronics", 6))
+        .op(create_course("Deep Learning", 6))
+        .op(create_enrollment("Mathematics", "GA42", true))
+        .op(create_enrollment("Physics", "GA42", true))
+        .op(create_enrollment("Programming", "GA42", true))
+        .op(create_enrollment("Digital Logic", "GA42", true))
+        .op(create_enrollment("Electronics", "GA42", true))
+        .op(create_enrollment("Deep Learning", "GA42", true))
+        .op(create_enrollment("Mathematics", "UX28", true))
+        .op(create_enrollment("Electronics", "UX28", true))
+        .op(create_enrollment("Deep Learning", "UX28", true))
+        .run();
+
+    val courses_for_John = get_all_courses_by_student("GA42");
+    val courses_for_Samantha = get_all_courses_by_student("UX28");
+    val courses_for_Benjamin = get_all_courses_by_student("AR87");
+
+    assert_equals(courses_for_John.size(), 6);
+    assert_equals(courses_for_John[0].name, 'Mathematics');
+    assert_equals(courses_for_John[1].name, 'Physics');
+    assert_equals(courses_for_John[2].name, 'Programming');
+    assert_equals(courses_for_John[3].name, 'Digital Logic');
+    assert_equals(courses_for_John[4].name, 'Electronics');
+    assert_equals(courses_for_John[5].name, 'Deep Learning');
+
+    assert_equals(courses_for_Samantha.size(), 3);
+    assert_equals(courses_for_Samantha[0].name, 'Mathematics');
+    assert_equals(courses_for_Samantha[1].name, 'Electronics');
+    assert_equals(courses_for_Samantha[2].name, 'Deep Learning');
+
+    assert_equals(courses_for_Benjamin.size(), 0);
+}

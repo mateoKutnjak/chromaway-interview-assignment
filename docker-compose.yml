@@ -1,0 +1,59 @@
+version: '3.7'
+
+services:
+
+  db:
+    image: postgres:14.9-alpine3.18
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env.db
+    network_mode: "host"
+
+  chromia:
+
+    user: "${UID}:${GID}"
+
+    image: registry.gitlab.com/chromaway/core-tools/chromia-cli/chr:0.14.3
+
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
+
+    # network_mode: "host"
+
+    # user: "$$(id -u):$$(id -g)"
+
+    # environment:
+    #   - SSH_AUTH_SOCK=$SSH_AUTH_SOCK
+    #   - TZ=$$(cat /etc/timezone)
+
+    network_mode: "host"
+
+    volumes:
+      - .:/usr/app
+      # - type: bind
+      #   read_only: true
+      #   source: "${HOME}/.ssh"
+      #   target: ${HOME}/.ssh
+      # - type: bind
+      #   read_only: true
+      #   source: "${HOME}/.config/jgit"
+      #   target: ${HOME}/.config/jgit
+      # - type: bind
+      #   read_only: true
+      #   source: "$$(pwd)"
+      #   target: /usr/app
+      # - type: bind
+      #   read_only: true
+      #   source: "/etc/passwd"
+      #   target: /etc/passwd
+      # - type: bind
+      #   read_only: true
+      #   source: "/etc/group"
+      #   target: /etc/group
+      # - "$SSH_AUTH_SOCK:$SSH_AUTH_SOCK"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

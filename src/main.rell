@@ -1,0 +1,95 @@
+module;
+
+// ENTITIES
+entity course {
+    key name: text;
+    points: integer;
+}
+
+entity student {
+    key student_id: text;
+    first_name: text;
+    last_name: text;
+    age: integer;
+}
+
+entity enrollment {
+    key course, student;
+    is_completed: boolean;
+}
+
+// STRUCTS
+struct enrollment_dto {
+    course: struct<course>;
+    student: struct<student>;
+    is_completed: boolean;
+}
+
+// OPERATIONS
+operation create_course(name: text, points: integer) {
+    create course ( name = name, points = points );
+}
+
+operation create_student(student_id: text, first_name: text, last_name: text, age: integer) {
+    create student ( student_id = student_id, first_name = first_name, last_name = last_name, age = age );
+}
+
+operation create_enrollment(course_name: text, student_id: text, is_completed: boolean) {
+    val course = require(course @? { .name == course_name }, "Course with name %s not found".format(course_name));
+    val student = require(
+        student @? {
+            .student_id == student_id
+        },
+        "Student with student_id %s not found"
+            .format(student_id)
+    );
+
+    create enrollment (
+        course,
+        student,
+        is_completed
+    );
+}
+
+// QUERIES
+query get_all_students() {
+    return student @* { } (
+        .student_id,
+        .first_name,
+        .last_name,
+        .age
+    );
+}
+
+query get_all_courses() {
+    return course @* { } (
+        .name,
+        .points
+    );
+}
+
+query get_all_enrollments() {
+    return enrollment @* { } (
+        enrollment_dto(
+      course = .course.to_struct(),
+      student = .student.to_struct(),
+      .is_completed
+    )
+    );
+}
+
+query count_students_by_course(course_name: text) {
+    require(course @? { .name == course_name }, "Course with name $s not found".format(course_name));
+
+    return enrollment @* { .course.name == course_name } (
+        @sum 1
+    );
+}
+
+query get_all_courses_by_student(student_id: text) {
+    require(student @? { .student_id == student_id }, "Student with student_id $s not found".format(student_id));
+
+    return enrollment @* { .student.student_id == student_id } (
+        .course.to_struct()
+    );
+}
