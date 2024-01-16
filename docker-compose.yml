@@ -8,6 +8,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - .env.db # Environmental variables file for Postgres database service
+    network_mode: "host"
 
   chromia:
     user: "${UID}:${GID}" # Arguemnts passed from command line about user and group ID
