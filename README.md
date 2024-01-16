@@ -2,7 +2,9 @@
 
 ## Notice
 
-By running tests, all of the listed assignments are tested:
+- Assignment was done on Ubuntu 22.04, but because of Docker it should be working on every OS. Docker engine version should be at least 19.0.5 (idealy 24.0.7 - latest version)
+
+## By running tests, all of the listed assignments are tested:
 
 1. Enrolling new student to a existing course
 2. Counting how many students are enrolled in specific course
