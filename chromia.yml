@@ -1,6 +1,9 @@
 blockchains:
   student-courses:
     module: main
+    moduleArgs:
+      main:
+        admin_pubkey: 0287D7669CB3CFF90275E799C87B4CC4C6BBFFF2E02ED759EB6B6F66D3E329E07E
 compile:
   rellVersion: 0.12.0
 database:
@@ -8,3 +11,6 @@ database:
 test:
   modules:
     - test
+  moduleArgs:
+    main:
+      admin_pubkey: "0287D7669CB3CFF90275E799C87B4CC4C6BBFFF2E02ED759EB6B6F66D3E329E07E"

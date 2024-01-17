@@ -25,6 +25,10 @@ struct enrollment_dto {
     is_completed: boolean;
 }
 
+struct module_args {
+  admin_pubkey: byte_array;
+}
+
 // OPERATIONS
 operation create_course(name: text, points: integer) {
     create course ( name = name, points = points );
@@ -35,6 +39,10 @@ operation create_student(student_id: text, first_name: text, last_name: text, ag
 }
 
 operation create_enrollment(course_name: text, student_id: text, is_completed: boolean) {
+    
+    val enrollmentServiceAdministratorPubKey = chain_context.args.admin_pubkey;
+    require(op_context.is_signer(enrollmentServiceAdministratorPubKey), "Only enrollment service administrator can enroll student");
+    
     val course = require(course @? { .name == course_name }, "Course with name %s not found".format(course_name));
     val student = require(
         student @? {

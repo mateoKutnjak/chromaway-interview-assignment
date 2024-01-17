@@ -2,6 +2,13 @@
 
 import main.*;
 
+val enrollment_service_administrator = rell.test.keypair(
+    priv = x"1EFE7518F447E513DB779A0B864214D49A31125C2925E4913DCE53E070A9760E",
+    pub = x"0287D7669CB3CFF90275E799C87B4CC4C6BBFFF2E02ED759EB6B6F66D3E329E07E"
+);
+
+val other_user = rell.test.keypairs.bob;
+
 function test_add_course() {
     rell.test.tx()
         .op(create_course("Mathematics", 7))
@@ -46,7 +53,7 @@ function test_add_student() {
     assert_equals(all_students[2].age, 72);
 }
 
-function test_add_student_to_a_course() {
+function test_add_student_to_a_course_by_admin() {
     rell.test.tx()
         .op(create_student("GA42", "John", "Smith", 22))
         .op(create_student("UX28", "Samantha", "Bosin", 19))
@@ -66,6 +73,7 @@ function test_add_student_to_a_course() {
         .op(create_enrollment("Mathematics", "UX28", true))
         .op(create_enrollment("Electronics", "UX28", true))
         .op(create_enrollment("Deep Learning", "UX28", true))
+        .sign(enrollment_service_administrator)
         .run();
 
     val all_enrollments = get_all_enrollments();
@@ -89,6 +97,30 @@ function test_add_student_to_a_course() {
     assert_equals(all_enrollments[8].is_completed, true);
 }
 
+function test_add_student_to_a_course_by_other() {
+    rell.test.tx()
+        .op(create_student("GA42", "John", "Smith", 22))
+        .op(create_student("UX28", "Samantha", "Bosin", 19))
+        .op(create_student("AR87", "Benjamin", "Button", 72))
+        .op(create_course("Mathematics", 7))
+        .op(create_course("Physics", 6))
+        .op(create_course("Programming", 6))
+        .op(create_course("Digital Logic", 6))
+        .op(create_course("Electronics", 6))
+        .op(create_course("Deep Learning", 6))
+        .op(create_enrollment("Mathematics", "GA42", true))
+        .op(create_enrollment("Physics", "GA42", true))
+        .op(create_enrollment("Programming", "GA42", true))
+        .op(create_enrollment("Digital Logic", "GA42", true))
+        .op(create_enrollment("Electronics", "GA42", true))
+        .op(create_enrollment("Deep Learning", "GA42", true))
+        .op(create_enrollment("Mathematics", "UX28", true))
+        .op(create_enrollment("Electronics", "UX28", true))
+        .op(create_enrollment("Deep Learning", "UX28", true))
+        .sign(other_user)
+        .run_must_fail();
+}
+
 function test_count_students_by_course() {
     rell.test.tx()
         .op(create_student("GA42", "John", "Smith", 22))
@@ -100,6 +132,7 @@ function test_count_students_by_course() {
         .op(create_enrollment("Mathematics", "UX28", true))
         .op(create_enrollment("Mathematics", "AR87", false))
         .op(create_enrollment("Physics", "AR87", true))
+        .sign(enrollment_service_administrator)
         .run();
 
     val enrollments_count_mathematics = count_students_by_course("Mathematics");
@@ -129,6 +162,7 @@ function test_get_all_courses_by_student() {
         .op(create_enrollment("Mathematics", "UX28", true))
         .op(create_enrollment("Electronics", "UX28", true))
         .op(create_enrollment("Deep Learning", "UX28", true))
+        .sign(enrollment_service_administrator)
         .run();
 
     val courses_for_John = get_all_courses_by_student("GA42");
